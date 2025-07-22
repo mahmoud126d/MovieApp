@@ -52,10 +52,10 @@ class HomeViewController: UIViewController, UICollectionViewDataSource {
             networkMonitor: networkMonitor,
             appLaunchChecker: appLaunchChecker
         )
-        
-        homeViewModel = HomeViewModel(
-            fetchTopRatedMoviesUseCase: FetchTopRatedMoviesUseCaseImpl(repository: repository), fetchMoviesOfTheYearUseCase: FetchMoviesOfTheYearUseCaseImpl(repository: repository), toggleFavoriteUseCase: ToggleFavoriteUseCaseImpl(repository: repository),
-            appLaunchChecker: AppLaunchChecker(userDefaults: UserDefaults.standard))
+        homeViewModel = DIContainer.shared.resolve(HomeViewModel.self)
+//        homeViewModel = HomeViewModel(
+//            fetchTopRatedMoviesUseCase: FetchTopRatedMoviesUseCaseImpl(repository: repository), fetchMoviesOfTheYearUseCase: FetchMoviesOfTheYearUseCaseImpl(repository: repository), toggleFavoriteUseCase: ToggleFavoriteUseCaseImpl(repository: repository),
+//            appLaunchChecker: AppLaunchChecker(userDefaults: UserDefaults.standard))
     }
     @objc func searchTapped() {
         print("Search icon tapped")
@@ -142,24 +142,36 @@ class HomeViewController: UIViewController, UICollectionViewDataSource {
 
 
     func verticalSection() -> NSCollectionLayoutSection {
-        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(150))
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .absolute(150)
+        )
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
 
-        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(150))
+        let groupSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .absolute(150)
+        )
         let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
 
         let section = NSCollectionLayoutSection(group: group)
         section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 24, trailing: 16)
         section.interGroupSpacing = 8
 
-        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(50))
-        let header = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize,
-                                                                  elementKind: UICollectionView.elementKindSectionHeader,
-                                                                  alignment: .top)
+        let headerSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .absolute(50)
+        )
+        let header = NSCollectionLayoutBoundarySupplementaryItem(
+            layoutSize: headerSize,
+            elementKind: UICollectionView.elementKindSectionHeader,
+            alignment: .top
+        )
         section.boundarySupplementaryItems = [header]
 
         return section
     }
+
 
 
     // MARK: - DataSource
@@ -173,9 +185,9 @@ class HomeViewController: UIViewController, UICollectionViewDataSource {
         case .banner:
             return 1
         case .moviesOfTheYear:
-            return homeViewModel.moviesOfTheYear.count
+            return homeViewModel.moviesOfTheYear.prefix(10).count
         case .topRatedMovies:
-            return homeViewModel.topRatedMovies.count
+            return homeViewModel.topRatedMovies.prefix(10).count
         }
     }
 
@@ -242,7 +254,6 @@ class HomeViewController: UIViewController, UICollectionViewDataSource {
             }
 
             cell.onCellTapped = {
-                    print("Cell tapped at \(indexPath.item)")
                 let detailVC = self.storyboard?.instantiateViewController(withIdentifier: "MovieDetailsViewController") as! MovieDetailsViewController
                 detailVC.selectedMovie = movie
                 detailVC.homeViewModel = self.homeViewModel
@@ -276,8 +287,9 @@ extension HomeViewController: UICollectionViewDelegate {
 
         header.titleLabel.text = (section == .moviesOfTheYear) ? "Top 2025 Movies" : "Top Rated"
         header.onSeeMoreTapped = {
-            print("See more tapped for section: \(section)")
             let moviesVC = self.storyboard?.instantiateViewController(withIdentifier: "MoviesViewController") as! MoviesViewController
+            moviesVC.movies = section == .moviesOfTheYear ? self.homeViewModel.moviesOfTheYear : self.homeViewModel.topRatedMovies
+            moviesVC.homeViewModel = self.homeViewModel
             moviesVC.title = header.titleLabel.text
             self.navigationController?.pushViewController(moviesVC, animated: true)
         }

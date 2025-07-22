@@ -14,6 +14,7 @@ protocol MovieLocalStorageProtocol {
     func saveMovies(from dtos: [MovieDTO],movieCategory:MovieCategory) -> AnyPublisher<[Movie], Error>
     func loadMovies(movieCategory:MovieCategory) -> AnyPublisher<[Movie], Error>
     func toggleFavorite(for movieID: Int) -> AnyPublisher<Void, Error>
+    func fetchFavoriteMovies() -> AnyPublisher<[Movie], Error>
 }
 
 final class MovieLocalStorage: MovieLocalStorageProtocol {
@@ -82,7 +83,23 @@ final class MovieLocalStorage: MovieLocalStorageProtocol {
         }
         .eraseToAnyPublisher()
     }
+    func fetchFavoriteMovies() -> AnyPublisher<[Movie], Error> {
+        Future { promise in
+            let request: NSFetchRequest<Movie> = Movie.fetchRequest()
+            
+            request.predicate = NSPredicate(format: "isFavorite == %d", true)
 
+            do {
+                let movies = try self.context.fetch(request)
+                promise(.success(movies))
+            } catch {
+                promise(.failure(error))
+            }
+        }
+        .eraseToAnyPublisher()
+        
+        
+    }
     func toggleFavorite(for movieID: Int) -> AnyPublisher<Void, Error> {
         return Future<Void, Error> { [weak self] promise in
             guard let self = self else {

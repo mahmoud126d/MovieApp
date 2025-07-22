@@ -12,6 +12,6 @@ protocol MovieRepositoryProtocol {
     func fetchTopRatedMovies() -> AnyPublisher<[Movie], Error>
     func fetchMoviesOfTheYear() -> AnyPublisher<[Movie], Error>
     func toggleFavorite(for movieId: Int) -> AnyPublisher<Void, Error>
-    //func fetchFavoriteMovies() -> AnyPublisher<[Movie], Error>
+    func fetchFavoriteMovies() -> AnyPublisher<[Movie], Error>
 }
 

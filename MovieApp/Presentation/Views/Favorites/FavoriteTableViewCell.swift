@@ -98,7 +98,9 @@ class FavoriteTableViewCell: UITableViewCell {
     }
 
     @objc private func favoriteTapped() {
+        isFavorite.toggle()
         onFavoriteTapped?()
+        updateFavoriteIcon()
     }
 
     private func updateFavoriteIcon() {

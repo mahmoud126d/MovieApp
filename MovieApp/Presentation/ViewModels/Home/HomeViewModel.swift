@@ -61,6 +61,6 @@ class HomeViewModel: ObservableObject{
                     // You can do any success-related logic here if needed
                 }
                 .store(in: &cancellables)
-        }
+    }
     
 }

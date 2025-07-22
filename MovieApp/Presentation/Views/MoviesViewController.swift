@@ -9,7 +9,8 @@ import UIKit
 
 class MoviesViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
-    
+    var movies: [Movie] = []
+    var homeViewModel: HomeViewModel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -24,29 +25,38 @@ class MoviesViewController: UIViewController {
 
 extension MoviesViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 4
+        return movies.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: FavoriteTableViewCell.identifier, for: indexPath) as! FavoriteTableViewCell
-        //let movie = movies[indexPath.row]
+        let movie = movies[indexPath.row]
+        let posterImage: UIImage
+        if let data = movie.posterImage, let image = UIImage(data: data) {
+            posterImage = image
+        } else {
+            posterImage = UIImage(named: "placeholder") ?? UIImage()
+        }
 
         cell.configure(
-            title: "Movie Title",
-            rating: "8.5",
-            releaseDate: "2025-07-21",
-            posterImage: UIImage(resource: .inception) ,
-            isFavorite: true
+            title: movie.title ?? "N/A",
+            rating: movie.voteAverage.description,
+            releaseDate: movie.releaseDate ?? "N/A",
+            posterImage: posterImage,
+            isFavorite: movie.isFavorite
         )
 
-        cell.onFavoriteTapped = {
+        cell.onFavoriteTapped = {[weak self] in
             print("Favorite button tapped for movie")
+            self?.homeViewModel.toggleFavorite(for: Int(movie.id))
             
         }
 
         cell.onCellTapped = {
-            print("Tapped cell for movie: ")
-            // You can navigate to detail screen here
+            let detailVC = self.storyboard?.instantiateViewController(withIdentifier: "MovieDetailsViewController") as! MovieDetailsViewController
+            detailVC.selectedMovie = movie
+            detailVC.homeViewModel = self.homeViewModel
+            self.navigationController?.pushViewController(detailVC, animated: true)
         }
 
         return cell

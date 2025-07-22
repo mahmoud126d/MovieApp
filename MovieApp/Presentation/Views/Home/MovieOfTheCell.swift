@@ -69,7 +69,7 @@ class MovieOftheYearCell: UICollectionViewCell {
         // Title label
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.font = UIFont.boldSystemFont(ofSize: 14)
-        titleLabel.numberOfLines = 2
+        titleLabel.numberOfLines = 1
         titleLabel.textColor = .label
         titleLabel.lineBreakMode = .byTruncatingTail
         
@@ -96,48 +96,53 @@ class MovieOftheYearCell: UICollectionViewCell {
     private func setupTapGesture() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(cellTapped))
         contentView.addGestureRecognizer(tapGesture)
-        
-        // Add touch feedback
         contentView.isUserInteractionEnabled = true
     }
     
     private func setupConstraints() {
-        let infoStack = UIStackView(arrangedSubviews: [titleLabel, ratingLabel, releaseDateLabel])
+        // Horizontal stack: Rating on left, Heart button on right
+        let ratingHeartStack = UIStackView(arrangedSubviews: [ratingLabel, favoriteButton])
+        ratingHeartStack.axis = .horizontal
+        ratingHeartStack.spacing = 4
+        ratingHeartStack.alignment = .center
+        ratingHeartStack.distribution = .equalSpacing
+        ratingHeartStack.translatesAutoresizingMaskIntoConstraints = false
+
+        ratingLabel.backgroundColor = .clear
+        favoriteButton.backgroundColor = .clear
+        ratingHeartStack.backgroundColor = .clear
+
+        // Main vertical stack
+        let infoStack = UIStackView(arrangedSubviews: [titleLabel, ratingHeartStack, releaseDateLabel])
         infoStack.axis = .vertical
         infoStack.spacing = 4
-        infoStack.alignment = .leading
-        infoStack.distribution = .fill
+        infoStack.alignment = .fill
         infoStack.translatesAutoresizingMaskIntoConstraints = false
-        
+
         contentView.addSubview(posterImageView)
         contentView.addSubview(infoStack)
-        contentView.addSubview(favoriteButton)
-        
+
         NSLayoutConstraint.activate([
-            // Poster image constraints
+            // Poster image
             posterImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
             posterImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
             posterImageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
             posterImageView.heightAnchor.constraint(equalTo: posterImageView.widthAnchor, multiplier: 1.5),
-            
-            // Info stack constraints
+
+            // Info stack (includes title, rating+heart, release date)
             infoStack.topAnchor.constraint(equalTo: posterImageView.bottomAnchor, constant: 8),
             infoStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
-            infoStack.trailingAnchor.constraint(equalTo: favoriteButton.leadingAnchor, constant: -8),
+            infoStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
             infoStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
-            
-            // Favorite button constraints
-            favoriteButton.topAnchor.constraint(equalTo: posterImageView.topAnchor, constant: 8),
-            favoriteButton.trailingAnchor.constraint(equalTo: posterImageView.trailingAnchor, constant: -8),
+
+            // Favorite button size
             favoriteButton.widthAnchor.constraint(equalToConstant: 24),
             favoriteButton.heightAnchor.constraint(equalToConstant: 24)
         ])
-        
-        // Set content hugging and compression resistance priorities
-        titleLabel.setContentHuggingPriority(UILayoutPriority(251), for: .vertical)
-        ratingLabel.setContentHuggingPriority(UILayoutPriority(252), for: .vertical)
-        releaseDateLabel.setContentHuggingPriority(UILayoutPriority(253), for: .vertical)
     }
+
+
+
     
     func configure(title: String, rating: String, releaseDate: String, posterImage: UIImage?, isFavorite: Bool = false) {
         titleLabel.text = title

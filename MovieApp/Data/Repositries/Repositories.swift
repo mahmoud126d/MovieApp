@@ -62,7 +62,9 @@ final class MovieRepository: MovieRepositoryProtocol {
     func toggleFavorite(for movieId: Int) -> AnyPublisher<Void, Error> {
         return storage.toggleFavorite(for: movieId)
     }
-
+    func fetchFavoriteMovies() -> AnyPublisher<[Movie], Error> {
+        return storage.fetchFavoriteMovies()
+    }
 }
 
 
