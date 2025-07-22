@@ -212,6 +212,8 @@ class HomeViewController: UIViewController, UICollectionViewDataSource {
             cell.onCellTapped = {
                 print("Cell tapped for Inception")
                 let detailVC = self.storyboard?.instantiateViewController(withIdentifier: "MovieDetailsViewController") as! MovieDetailsViewController
+                detailVC.selectedMovie = movie
+                detailVC.homeViewModel = self.homeViewModel
                 self.navigationController?.pushViewController(detailVC, animated: true)
             }
             return cell
@@ -242,6 +244,8 @@ class HomeViewController: UIViewController, UICollectionViewDataSource {
             cell.onCellTapped = {
                     print("Cell tapped at \(indexPath.item)")
                 let detailVC = self.storyboard?.instantiateViewController(withIdentifier: "MovieDetailsViewController") as! MovieDetailsViewController
+                detailVC.selectedMovie = movie
+                detailVC.homeViewModel = self.homeViewModel
                 self.navigationController?.pushViewController(detailVC, animated: true)
                 }
             return cell

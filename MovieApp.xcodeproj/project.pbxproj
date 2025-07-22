@@ -171,6 +171,7 @@
 		223917732E2F8A6D00AB66EC /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				2239179D2E2FD84100AB66EC /* Favorites */,
 				223917982E2FA41200AB66EC /* Home */,
 			);
 			path = ViewModels;
@@ -288,6 +289,13 @@
 				223917992E2FA42100AB66EC /* HomeViewModel.swift */,
 			);
 			path = Home;
+			sourceTree = "<group>";
+		};
+		2239179D2E2FD84100AB66EC /* Favorites */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Favorites;
 			sourceTree = "<group>";
 		};
 		22D65A552E2EAF6B00F34B62 = {

@@ -43,6 +43,7 @@ final class MovieLocalStorage: MovieLocalStorageProtocol {
                 movie.voteAverage = dto.voteAverage
                 movie.posterPath = dto.posterPath
                 movie.isFavorite = false
+                movie.originalLanguage = dto.language
                 movie.category = movieCategory.rawValue
 
                 // Download and save poster image if exists
