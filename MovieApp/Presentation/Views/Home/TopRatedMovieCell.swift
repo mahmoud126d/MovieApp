@@ -107,12 +107,12 @@ class TopRatedMovieCell: UICollectionViewCell {
     }
 
     // MARK: - Public configure
-    func configure(title: String, rating: String, releaseDate: String, posterImage: UIImage?, isFavorite: Bool = false) {
+    func configure(title: String, rating: String, releaseDate: String, posterImage: UIImage, isFavorite: Bool = false) {
         titleLabel.text = title
         ratingLabel.text = "⭐️ \(rating)"
         releaseDateLabel.text = "📅 \(releaseDate)"
 
-        posterImageView.image = posterImage ?? UIImage(systemName: "film.fill")
+        posterImageView.image = posterImage
         posterImageView.tintColor = posterImage == nil ? .systemGray3 : nil
 
         self.isFavorite = isFavorite

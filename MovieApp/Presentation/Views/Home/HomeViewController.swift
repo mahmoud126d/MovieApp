@@ -6,25 +6,56 @@
 //
 
 import UIKit
+import Combine
 
 class HomeViewController: UIViewController, UICollectionViewDataSource {
 
-    enum Section: Int, CaseIterable {
-        case banner
-        case moviesOfTheYear
-        case topRatedMovies
-    }
-
     var collectionView: UICollectionView!
+    private var homeViewModel:HomeViewModel!
+    private var cancellables = Set<AnyCancellable>()
+    
+    override func viewWillAppear(_ animated: Bool) {
+        homeViewModel.fetchMovies()
+        homeViewModel.$topRatedMovies
+                    .receive(on: RunLoop.main)
+                    .sink { [weak self] _ in
+                        self?.collectionView.reloadData()
+                    }
+                    .store(in: &cancellables)
+        homeViewModel.$moviesOfTheYear
+                    .receive(on: RunLoop.main)
+                    .sink { [weak self] _ in
+                        self?.collectionView.reloadData()
+                    }
+                    .store(in: &cancellables)
+        homeViewModel.fetchMovies()
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setUpHomeViewModel()
         view.backgroundColor = .systemBackground
         title = "Home"
         let searchButton = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(searchTapped))
         self.navigationItem.rightBarButtonItem = searchButton
-        //setupTopBar()
         setupCollectionView()
+    }
+    private func setUpHomeViewModel() {
+        let networkMonitor = NetworkMonitor()
+        let apiService = MovieAPIService()
+        let storage = MovieLocalStorage()
+        let appLaunchChecker = AppLaunchChecker()
+
+        let repository = MovieRepository(
+            api: apiService,
+            storage: storage,
+            networkMonitor: networkMonitor,
+            appLaunchChecker: appLaunchChecker
+        )
+        
+        homeViewModel = HomeViewModel(
+            fetchTopRatedMoviesUseCase: FetchTopRatedMoviesUseCaseImpl(repository: repository), fetchMoviesOfTheYearUseCase: FetchMoviesOfTheYearUseCaseImpl(repository: repository), toggleFavoriteUseCase: ToggleFavoriteUseCaseImpl(repository: repository),
+            appLaunchChecker: AppLaunchChecker(userDefaults: UserDefaults.standard))
     }
     @objc func searchTapped() {
         print("Search icon tapped")
@@ -142,9 +173,9 @@ class HomeViewController: UIViewController, UICollectionViewDataSource {
         case .banner:
             return 1
         case .moviesOfTheYear:
-            return 6
+            return homeViewModel.moviesOfTheYear.count
         case .topRatedMovies:
-            return 3
+            return homeViewModel.topRatedMovies.count
         }
     }
 
@@ -156,15 +187,25 @@ class HomeViewController: UIViewController, UICollectionViewDataSource {
             return cell
         case .moviesOfTheYear:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MovieCell", for: indexPath) as! MovieOftheYearCell
+            let movie = homeViewModel.moviesOfTheYear[indexPath.item]
+            let posterImage: UIImage
+
+            if let data = movie.posterImage, let image = UIImage(data: data) {
+                posterImage = image
+            } else {
+                posterImage = UIImage(named: "placeholder") ?? UIImage()
+            }
+
             cell.configure(
-                title: "Inception",
-                rating: "8.8",
-                releaseDate: "2010",
-                posterImage: UIImage(resource: .inception)
+                title: movie.title ?? "N/A",
+                rating: movie.voteAverage.description,
+                releaseDate: movie.releaseDate ?? "N/A",
+                posterImage: posterImage,
+                isFavorite: movie.isFavorite
             )
             // Handle favorite toggle
-            cell.onFavoriteToggled = {isFavorite in
-                print(("Favorite toggled for Inception: \(isFavorite)"))
+            cell.onFavoriteToggled = {[weak self] isFavorite in
+                self?.homeViewModel.toggleFavorite(for: Int(movie.id))
             }
 
             // Handle cell tap
@@ -177,16 +218,26 @@ class HomeViewController: UIViewController, UICollectionViewDataSource {
 
         case .topRatedMovies:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ThumbnailCell", for: indexPath) as! TopRatedMovieCell
+            let movie = homeViewModel.topRatedMovies[indexPath.item]
+            let posterImage: UIImage
+
+            if let data = movie.posterImage, let image = UIImage(data: data) {
+                posterImage = image
+            } else {
+                posterImage = UIImage(named: "placeholder") ?? UIImage()
+            }
+
             cell.configure(
-                title: "Top Movie \(indexPath.item + 1)",
-                rating: "8.\(indexPath.item)",
-                releaseDate: "2025-0\(indexPath.item + 1)-01",
-                posterImage: UIImage(resource: .inception),
-                isFavorite: indexPath.item % 2 == 0
+                title: movie.title ?? "N/A",
+                rating: movie.voteAverage.description,
+                releaseDate: movie.releaseDate ?? "N/A",
+                posterImage: posterImage,
+                isFavorite: movie.isFavorite
             )
-            cell.onFavoriteToggle = {
-                    print("Favorite tapped on movie at \(indexPath.item)")
-                }
+
+            cell.onFavoriteToggle = {[weak self] in
+                self?.homeViewModel.toggleFavorite(for: Int(movie.id))
+            }
 
             cell.onCellTapped = {
                     print("Cell tapped at \(indexPath.item)")
@@ -229,4 +280,10 @@ extension HomeViewController: UICollectionViewDelegate {
 
         return header
     }
+}
+
+enum Section: Int, CaseIterable {
+    case banner
+    case moviesOfTheYear
+    case topRatedMovies
 }
