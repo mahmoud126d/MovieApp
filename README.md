@@ -26,7 +26,9 @@ An iOS application built for Momentum Solutions technical assessment. The app di
 
 ## Setup
 
+Developed on **Xcode 15**.
+
 1. Clone the repository:
    ```bash
-   git clone [https://github.com/mahmoud126d/MovieApp]
+   git clone https://github.com/mahmoud126d/MovieApp.git
    cd MovieApp
